@@ -35,11 +35,10 @@ jobs:
           unzip -o AutoCombatClient-Source.zip -d project
           test -f project/build.gradle
 
-      - name: Fix mappings configuration
+      - name: Fix Fabric Loom plugin
         run: |
-          sed -i '/mappings loom\.officialMojangMappings()/d' project/build.gradle
-          echo "Updated mappings configuration:"
-          cat project/build.gradle
+          sed -i "s/net.fabricmc.fabric-loom'/net.fabricmc.fabric-loom-remap'/" project/build.gradle
+          grep -nE "fabric-loom|mappings|modImplementation" project/build.gradle
 
       - name: Build Fabric mod
         working-directory: project
