@@ -32,7 +32,7 @@ jobs:
       - name: Extract source ZIP
         run: |
           mkdir -p project
-          unzip -o AutoCombatClient-Source-fixed.zip -d project
+          unzip -o AutoCombatClient-Source-fixed-v2.zip -d project
           test -f project/build.gradle
 
       - name: Fix Fabric Loom plugin
