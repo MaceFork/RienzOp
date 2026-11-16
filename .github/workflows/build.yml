@@ -3,11 +3,16 @@ name: Build AutoCombatClient
 
 on:
   push:
-    branches: [main]
+    branches:
+      - main
   workflow_dispatch:
+
+permissions:
+  contents: read
 
 jobs:
   build:
+    name: Build JAR
     runs-on: ubuntu-latest
 
     steps:
@@ -25,16 +30,33 @@ jobs:
         with:
           gradle-version: '9.2.1'
 
-      - name: Extract source ZIP
-        run: unzip AutoCombatClient-Source.zip -d project
+      - name: Check source ZIP
+        run: |
+          ls -la
+          test -f AutoCombatClient-Source.zip
 
-      - name: Build JAR
+      - name: Extract source project
+        run: |
+          mkdir -p project
+          unzip -o AutoCombatClient-Source.zip -d project
+          ls -la project
+          test -f project/build.gradle
+          test -f project/settings.gradle
+
+      - name: Build Fabric mod
         working-directory: project
-        run: gradle build
+        run: gradle build --no-daemon --stacktrace --info
 
-      - name: Upload JAR
+      - name: List generated JAR files
+        if: success()
+        run: find project/build/libs -maxdepth 1 -type f -name '*.jar' -print
+
+      - name: Upload JAR artifact
+        if: success()
         uses: actions/upload-artifact@v4
         with:
           name: AutoCombatClient-JAR
           path: project/build/libs/*.jar
+          if-no-files-found: error
+          retention-days: 7
           
