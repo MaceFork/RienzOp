@@ -3,8 +3,7 @@ name: Build AutoCombatClient
 
 on:
   push:
-    branches:
-      - main
+    branches: [main]
   workflow_dispatch:
 
 permissions:
@@ -30,28 +29,23 @@ jobs:
         with:
           gradle-version: '9.2.1'
 
-      - name: Check source ZIP
-        run: |
-          ls -la
-          test -f AutoCombatClient-Source.zip
-
-      - name: Extract source project
+      - name: Extract source ZIP
         run: |
           mkdir -p project
           unzip -o AutoCombatClient-Source.zip -d project
-          ls -la project
           test -f project/build.gradle
-          test -f project/settings.gradle
+
+      - name: Fix mappings configuration
+        run: |
+          sed -i '/mappings loom\.officialMojangMappings()/d' project/build.gradle
+          echo "Updated mappings configuration:"
+          cat project/build.gradle
 
       - name: Build Fabric mod
         working-directory: project
-        run: gradle build --no-daemon --stacktrace --info
+        run: gradle build --no-daemon --stacktrace
 
-      - name: List generated JAR files
-        if: success()
-        run: find project/build/libs -maxdepth 1 -type f -name '*.jar' -print
-
-      - name: Upload JAR artifact
+      - name: Upload JAR
         if: success()
         uses: actions/upload-artifact@v4
         with:
